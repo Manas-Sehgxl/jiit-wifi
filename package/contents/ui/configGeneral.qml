@@ -19,7 +19,7 @@ Kirigami.ScrollablePage {
     property string xrayMode: "system"
     property string xrayService: "xray.service"
     property bool debug: false
-    property bool xrayEnabled: true
+    property bool xrayEnabled: false
     property bool startXrayAfterLogin: true
     property bool stopXrayOnLeave: true
     property bool logoutBeforeSleep: true
@@ -128,19 +128,19 @@ Kirigami.ScrollablePage {
                 Kirigami.FormData.label: i18n("Xray service mode:")
                 model: ["system", "user"]
                 currentIndex: model.indexOf(page.xrayMode)
-                enabled: page.loaded && !page.busy
+                enabled: page.loaded && !page.busy && page.xrayEnabled
                 onActivated: page.xrayMode = currentText
             }
             Controls.TextField {
                 Kirigami.FormData.label: i18n("Xray unit:")
                 text: page.xrayService
-                enabled: page.loaded && !page.busy
+                enabled: page.loaded && !page.busy && page.xrayEnabled
                 onTextEdited: page.xrayService = text
             }
         }
-        Controls.CheckBox { text: i18n("Manage Xray automatically"); checked: page.xrayEnabled; enabled: page.loaded && !page.busy; onToggled: page.xrayEnabled = checked }
-        Controls.CheckBox { text: i18n("Start Xray after portal login"); checked: page.startXrayAfterLogin; enabled: page.loaded && !page.busy; onToggled: page.startXrayAfterLogin = checked }
-        Controls.CheckBox { text: i18n("Stop Xray when leaving JIIT Wi-Fi"); checked: page.stopXrayOnLeave; enabled: page.loaded && !page.busy; onToggled: page.stopXrayOnLeave = checked }
+        Controls.CheckBox { text: i18n("Use Xray (requires an Xray systemd service)"); checked: page.xrayEnabled; enabled: page.loaded && !page.busy; onToggled: page.xrayEnabled = checked }
+        Controls.CheckBox { text: i18n("Start Xray after portal login"); checked: page.startXrayAfterLogin; enabled: page.loaded && !page.busy && page.xrayEnabled; onToggled: page.startXrayAfterLogin = checked }
+        Controls.CheckBox { text: i18n("Stop Xray when leaving JIIT Wi-Fi"); checked: page.stopXrayOnLeave; enabled: page.loaded && !page.busy && page.xrayEnabled; onToggled: page.stopXrayOnLeave = checked }
         Controls.CheckBox { text: i18n("Log out before sleep"); checked: page.logoutBeforeSleep; enabled: page.loaded && !page.busy; onToggled: page.logoutBeforeSleep = checked }
         Controls.CheckBox { text: i18n("Authenticate after waking"); checked: page.autoLoginAfterWake; enabled: page.loaded && !page.busy; onToggled: page.autoLoginAfterWake = checked }
         Controls.CheckBox { text: i18n("Debug logging"); checked: page.debug; enabled: page.loaded && !page.busy; onToggled: page.debug = checked }

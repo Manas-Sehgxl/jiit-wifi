@@ -12,6 +12,7 @@ PlasmoidItem {
             state: "DISCONNECTED",
             network: ({}),
             xray: "Unknown",
+            xray_enabled: false,
             account: ""
         })
     property string message: ""
@@ -96,6 +97,7 @@ PlasmoidItem {
             }
             PlasmaComponents.Label {
                 text: "Xray: " + root.statusData.xray
+                visible: root.statusData.xray_enabled === true
             }
             PlasmaComponents.Label {
                 text: root.message
@@ -121,6 +123,7 @@ PlasmoidItem {
             }
             Row {
                 spacing: 6
+                visible: root.statusData.xray_enabled === true
                 PlasmaComponents.Button {
                     text: "Start Xray"
                     onClicked: backend.action("StartXray")

@@ -1,10 +1,28 @@
 #include "jiit/sophos.h"
 #include "jiit/types.h"
+#include "jiit/xray.h"
 #include <QtTest>
 
 class CoreTests final : public QObject {
   Q_OBJECT
 private slots:
+  void disabledXrayNeverRunsSystemctl() {
+    Jiit::XrayManager xray;
+    xray.configure(false, "system", "xray.service");
+    QCOMPARE(xray.status(), QString("Disabled"));
+    QVERIFY(!xray.enabled());
+    QSignalSpy spy(&xray, &Jiit::XrayManager::operationFinished);
+    xray.query();
+    xray.start();
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.at(0).at(1).toBool(), false);
+    QVERIFY(!xray.isActive());
+  }
+  void xrayIsOptInByDefault() {
+    QVERIFY(!Jiit::Settings{}.xrayEnabled);
+    QVERIFY(!Jiit::Settings::fromJson({}).xrayEnabled);
+    QVERIFY(Jiit::Settings::fromJson({{"xray_enabled", true}}).xrayEnabled);
+  }
   void epochUsesHundredths() {
     QCOMPARE(
         Jiit::epochTimestamp().size(),

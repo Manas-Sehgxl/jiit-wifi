@@ -53,7 +53,7 @@ struct Settings {
   QString gateway{"http://172.16.68.6:8090/"};
   int timeoutSeconds{8}, retryCount{4}, retryIntervalSeconds{15},
       pollIntervalSeconds{5};
-  bool debug{false}, xrayEnabled{true}, startXrayAfterLogin{true},
+  bool debug{false}, xrayEnabled{false}, startXrayAfterLogin{true},
       stopXrayOnLeave{true};
   bool logoutBeforeSleep{true}, autoLoginAfterWake{true};
   QString xrayMode{"system"}, xrayService{"xray.service"};

@@ -21,7 +21,9 @@ FirewallService::FirewallService(QObject *parent)
   m_sophos.setTimeout(m_settings.timeoutSeconds);
   m_sophos.setRetries(m_settings.retryCount);
   m_network.setInterval(m_settings.pollIntervalSeconds);
-  m_xray.configure(m_settings.xrayMode, m_settings.xrayService);
+  m_xray.configure(m_settings.xrayEnabled, m_settings.xrayMode,
+                   m_settings.xrayService);
+  m_xrayStatus = m_xray.status();
   m_sleepLogoutDeadline.setSingleShot(true);
   connect(&m_sleepLogoutDeadline, &QTimer::timeout, this, [this] {
     qWarning() << "Sleep logout exceeded the logind delay window";
@@ -71,6 +73,7 @@ QJsonObject FirewallService::status() const {
           {"authenticated", m_authenticated},
           {"account", m_accountName},
           {"xray", m_xrayStatus},
+          {"xray_enabled", m_xray.enabled()},
           {"automation", m_busy}};
 }
 QString FirewallService::getSettings() const {
@@ -124,7 +127,9 @@ QString FirewallService::setSettings(const QString &json) {
   m_sophos.setTimeout(next.timeoutSeconds);
   m_sophos.setRetries(next.retryCount);
   m_network.setInterval(next.pollIntervalSeconds);
-  m_xray.configure(next.xrayMode, next.xrayService);
+  if (!next.xrayEnabled)
+    m_ownsXray = false;
+  m_xray.configure(next.xrayEnabled, next.xrayMode, next.xrayService);
   if (next.logoutBeforeSleep)
     acquireSleepInhibitor();
   else
@@ -255,10 +260,14 @@ QString FirewallService::logout() {
 }
 QString FirewallService::retry() { return login(); }
 QString FirewallService::startXray() {
+  if (!m_xray.enabled())
+    return R"({"ok":false,"message":"Xray integration is disabled in settings"})";
   m_xray.start();
   return R"({"ok":true,"message":"Xray start requested"})";
 }
 QString FirewallService::stopXray() {
+  if (!m_xray.enabled())
+    return R"({"ok":false,"message":"Xray integration is disabled in settings"})";
   m_ownsXray = false;
   m_xray.stop();
   return R"({"ok":true,"message":"Xray stop requested"})";

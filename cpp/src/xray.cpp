@@ -4,8 +4,17 @@ namespace Jiit {
 
 XrayManager::XrayManager(QObject *p) : QObject(p) {}
 
-void XrayManager::configure(const QString &mode, const QString &service) {
+void XrayManager::configure(bool enabled, const QString &mode,
+                            const QString &service) {
   static const QRegularExpression valid("^[A-Za-z0-9_.@:-]+$");
+  m_enabled = enabled;
+  if (!enabled) {
+    // Without Xray integration, never touch systemctl.
+    m_active = false;
+    m_status = "Disabled";
+    emit stateChanged(m_status);
+    return;
+  }
   if ((mode != "system" && mode != "user") ||
       !valid.match(service).hasMatch()) {
     m_available = false;
@@ -23,6 +32,10 @@ void XrayManager::start() { run("start"); }
 void XrayManager::stop() { run("stop"); }
 void XrayManager::query() { run("is-active"); }
 void XrayManager::run(const QString &action) {
+  if (!m_enabled) {
+    emit operationFinished(action, false, "Xray integration is disabled");
+    return;
+  }
   if (!m_available) {
     emit operationFinished(action, false, "Invalid service settings");
     return;
